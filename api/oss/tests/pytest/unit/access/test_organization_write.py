@@ -59,16 +59,18 @@ class _World:
             rbac=RecordingRbac(enforced=True),
             principals=self.principals,
         )
-        default = SimpleNamespace(id=self.default.project_id) if has_default else None
+        default = (
+            SimpleNamespace(project_id=self.default.project_id) if has_default else None
+        )
 
-        async def _default_project(organization_id):
-            assert organization_id == str(self.organization_id)
+        async def _default_project(*, workspace_or_organization_id):
+            assert workspace_or_organization_id == str(self.organization_id)
             return default
 
         monkeypatch.setattr(permissions_module, "get_access_service", lambda: service)
         monkeypatch.setattr(
             permissions_module.db_manager,
-            "get_default_project_by_organization_id",
+            "fetch_default_project",
             _default_project,
         )
 
